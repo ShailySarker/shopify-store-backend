@@ -162,119 +162,62 @@ const getGeographicalDistribution = async (req, res) => {
 
 
 // 6. Customer Lifetime Value by Cohorts:
-// const getCLVByCohort = async (req, res) => {
-//   try {
-//     const result = await Order.aggregate([
-//       {
-//         $addFields: {
-//           first_purchase_date: {
-//             $dateFromString: { dateString: "$customer.created_at" },
-//           },
-//           order_date: { $dateFromString: { dateString: "$created_at" } },
-//           total_price: { $toDouble: "$total_line_items_price" },
-//         },
-//       },
-//       {
-//         $addFields: {
-//           first_purchase_month: {
-//             $dateToString: { format: "%Y-%m", date: "$first_purchase_date" },
-//           },
-//           order_month: {
-//             $dateToString: { format: "%Y-%m", date: "$order_date" },
-//           },
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: {
-//             cohort: "$first_purchase_month",
-//             order_month: "$order_month",
-//           },
-//           total_clv: { $sum: "$total_price" },
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$_id.cohort",
-//           monthly_clv: {
-//             $push: {
-//               month: "$_id.order_month",
-//               clv: "$total_clv",
-//             },
-//           },
-//         },
-//       },
-//       {
-//         $sort: { _id: 1 },
-//       },
-//     ]);
-
-//     res.status(200).json({
-//       success: true,
-//       data: result,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching CLV by cohorts:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
 const getCLVByCohort = async (req, res) => {
-    try {
-        const result = await Order.aggregate([
-            {
-                $addFields: {
-                    first_purchase_date: {
-                        $dateFromString: { dateString: "$customer.created_at" },
-                    },
-                    order_date: { $dateFromString: { dateString: "$created_at" } },
-                    total_price: { $toDouble: "$total_line_items_price" },
-                },
+  try {
+    const result = await Order.aggregate([
+      {
+        $addFields: {
+          first_purchase_date: {
+            $dateFromString: { dateString: "$customer.created_at" },
+          },
+          order_date: { $dateFromString: { dateString: "$created_at" } },
+          total_price: { $toDouble: "$total_line_items_price" },
+        },
+      },
+      {
+        $addFields: {
+          first_purchase_month: {
+            $dateToString: { format: "%Y-%m", date: "$first_purchase_date" },
+          },
+          order_month: {
+            $dateToString: { format: "%Y-%m", date: "$order_date" },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            cohort: "$first_purchase_month",
+            order_month: "$order_month",
+          },
+          total_clv: { $sum: "$total_price" },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.cohort",
+          monthly_clv: {
+            $push: {
+              month: "$_id.order_month",
+              clv: "$total_clv",
             },
-            {
-                $addFields: {
-                    first_purchase_month: {
-                        $dateToString: { format: "%Y-%m", date: "$first_purchase_date" },
-                    },
-                    order_month: {
-                        $dateToString: { format: "%Y-%m", date: "$order_date" },
-                    },
-                },
-            },
-            {
-                $group: {
-                    _id: {
-                        cohort: "$first_purchase_month",
-                        order_month: "$order_month",
-                    },
-                    total_clv: { $sum: "$total_price" },
-                },
-            },
-            {
-                $group: {
-                    _id: "$_id.cohort",
-                    monthly_clv: {
-                        $push: {
-                            month: "$_id.order_month",
-                            clv: "$total_clv",
-                        },
-                    },
-                },
-            },
-            {
-                $sort: { _id: 1 },
-            },
-        ]);
+          },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
 
-        res.status(200).json({
-            success: true,
-            data: result,
-        });
-    } catch (error) {
-        console.error("Error fetching CLV by cohorts:", error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching CLV by cohorts:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
-
 
 
 module.exports = {
